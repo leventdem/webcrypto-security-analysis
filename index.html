@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Masq security analysis</title>
+    <title>Webcrypto security analysis</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
 
     <!-- Custom styles for this template -->
-    <link href="masq.css" rel="stylesheet">
+    <link href="index.css" rel="stylesheet">
   </head>
 
   <body>
 
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-      <a class="navbar-brand" href="#">Masq</a>
+      <a class="navbar-brand" href="#">Client-side-encryption</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -28,9 +28,9 @@
           <li class="nav-item active">
             <a class="nav-link"  href="./index.html">webCryptoAPI <span class="sr-only">(current)</span></a>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link" href="./app/index.html">Security with Masq</a>
-          </li>
+          </li> -->
         </ul>
       </div>
     </nav>
@@ -51,8 +51,8 @@
           <div class="col-md-6">
             <h3>Generate a AES 128 bits key</h3>
             <p>We need an encryption key, let's generate an AES 128 bits key.</p>
-            <p><a class="btn btn-primary btn-md" id="generateAESKeyTrue" href="#generateAESKey" role="button">Generate with extractable true</a></p>
-            <p><a class="btn btn-primary btn-md" id="generateAESKeyFalse" href="#generateAESKey" role="button">Generate with extractable false</a></p>
+            <p><a class="btn btn-primary btn-md" id="generateAESKeyTrue" href="#generateAESKeyTrue" role="button">Generate with extractable true</a></p>
+            <p><a class="btn btn-primary btn-md" id="generateAESKeyFalse" href="#generateAESKeyTrue" role="button">Generate with extractable false</a></p>
           
           </div>
           <div class="col-md-6">
@@ -63,7 +63,7 @@
                 <div class="col-md-6">
                   <h3>Export the key</h3>
                   <p>We can export the generated key if the extractable property is set to true.  </p>
-                  <p><a class="btn btn-primary btn-md" id="exportAESKey" href="#" role="button">Export key</a></p>
+                  <p><a class="btn btn-primary btn-md" id="exportAESKey" href="#generateAESKeyTrue" role="button">Export key</a></p>
                 </div>
                 <div class="col-md-6">
                       <div id=step2KeyExport></div>
@@ -73,7 +73,7 @@
             <div class="col-md-6">
                 <h3>Encrypt decrypt data</h3>
                 <p>The generated AES key is stored in a CryptoKey, this is like a black box with input and output. </p>
-                <p><a class="btn btn-primary btn-md" id="encryptDecrypt" href="#" role="button">Encrypt/decrypt</a></p>
+                <p><a class="btn btn-primary btn-md" id="encryptDecrypt" href="#encryptDecrypt" role="button">Encrypt/decrypt</a></p>
             </div>
             <div class="col-md-6">
                 <div id=step3Encrypt></div>
@@ -84,7 +84,7 @@
             <div class="col-md-6">
                     <h3>Wrap the AES key</h3>
                     <p>We derive a key based on the given passphrase, encrypt the AES key and export it.</p>
-                    <p><a class="btn btn-info btn-md" id="deriveKey" href="#" role="button">Wrap</a></p>
+                    <p><a class="btn btn-info btn-md" id="deriveKey" href="#deriveKey" role="button">Wrap</a></p>
             </div>
             <div class="col-md-6">
               <div id=step4Derive></div>

@@ -71,13 +71,13 @@ const exportAESKey = () => {
   AESInstance.exportKeyRaw(cryptoKeyAES)
     .then(exportedKey => {
       console.log(exportedKey)
-      messageToPrint = 'Successfully exported.'
+      messageToPrint = 'Successfully exported. Now try again, relaod the page but choose to  generate the AES key with the extractable property set to false.'
       el.innerHTML = fillElement(`${messageToPrint}`)
     })
     .catch(err => {
       console.log(err)
       messageToPrint = err
-      el.innerHTML = fillElement(`${messageToPrint}`)
+      el.innerHTML = fillElement(`You generate a non extractable AES key, the export is not authorized. <br/>${messageToPrint}`)
     })
 }
 
@@ -89,6 +89,7 @@ const encryptDecrypt = () => {
     // console.log(ciphertext.ciphertext)
       let el = document.getElementById('step3Encrypt')
       el.innerHTML = fillElement(`
+  No matter if the generated AES key is extractable or not, you can encrypt/dectypt data using a black box. <br/>
   Initial message : ${JSON.stringify(data)}<br/>
   Encrypted msg : ${ciphertext.ciphertext.slice(0, 10)}...`)
       return AESInstance.decrypt(cryptoKeyAES, ciphertext)
@@ -130,6 +131,7 @@ const deriveKey = () => {
           console.log(err)
           let el = document.getElementById('step4WrapFail')
           el.innerHTML = (`<p>
+          You generate a non extractable AES key, the wrap opertion is not authorized.<br/>
           Wrapping of AES key : fail</p>`)
         })
     }).catch(err => console.log(err))

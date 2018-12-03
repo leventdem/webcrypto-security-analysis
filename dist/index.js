@@ -96,12 +96,12 @@ var exportAESKey = function exportAESKey() {
   var el = document.getElementById('step2KeyExport');
   AESInstance.exportKeyRaw(cryptoKeyAES).then(function (exportedKey) {
     console.log(exportedKey);
-    messageToPrint = 'Successfully exported.';
+    messageToPrint = 'Successfully exported. Now try again, relaod the page but choose to  generate the AES key with the extractable property set to false.';
     el.innerHTML = fillElement('' + messageToPrint);
   }).catch(function (err) {
     console.log(err);
     messageToPrint = err;
-    el.innerHTML = fillElement('' + messageToPrint);
+    el.innerHTML = fillElement('You generate a non extractable AES key, the export is not authorized. <br/>' + messageToPrint);
   });
 };
 
@@ -111,7 +111,7 @@ var encryptDecrypt = function encryptDecrypt() {
   AESInstance.encrypt(cryptoKeyAES, data).then(function (ciphertext) {
     // console.log(ciphertext.ciphertext)
     var el = document.getElementById('step3Encrypt');
-    el.innerHTML = fillElement('\n  Initial message : ' + JSON.stringify(data) + '<br/>\n  Encrypted msg : ' + ciphertext.ciphertext.slice(0, 10) + '...');
+    el.innerHTML = fillElement('\n  No matter if the generated AES key is extractable or not, you can encrypt/dectypt data using a black box. <br/>\n  Initial message : ' + JSON.stringify(data) + '<br/>\n  Encrypted msg : ' + ciphertext.ciphertext.slice(0, 10) + '...');
     return AESInstance.decrypt(cryptoKeyAES, ciphertext);
   }).then(function (plaintext) {
     console.log('Decrypted message', plaintext);
@@ -134,7 +134,7 @@ var deriveKey = function deriveKey() {
     console.log('Salt : ', Buffer.from('theSalt'));
     console.log('Iterations : ', iterations);
     console.log('Wrapping key : ', wrappingKey);
-    el.innerHTML = fillElement('Wrapping/derived key operation done. ');
+    el.innerHTML = fillElement('Passphrase derivation succesfully done. ');
     AESInstance.wrapKey(cryptoKeyAES, wrappingKey, 128, type, mode).then(function (wrappedKey) {
       console.log('Wrapped key', wrappedKey);
       var el = document.getElementById('step4WrapSuccess');
@@ -147,7 +147,7 @@ var deriveKey = function deriveKey() {
     }).catch(function (err) {
       console.log(err);
       var el = document.getElementById('step4WrapFail');
-      el.innerHTML = '<p>\n          Wrapping of AES key : fail</p>';
+      el.innerHTML = '<p>\n          You generate a non extractable AES key, the wrap opertion is not authorized.<br/>\n          Wrapping of AES key : fail</p>';
     });
   }).catch(function (err) {
     return console.log(err);
