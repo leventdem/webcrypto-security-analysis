@@ -1,0 +1,30 @@
+{
+  "name": "masq-security-analyze",
+  "version": "1.0.0",
+  "description": "Understand the webCryptoAPI",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "babel ./src/ --presets env --out-dir dist/ && webpack --mode development",
+    "start": "http-server . -p 8081"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-runtime": "^6.26.0",
+    "eslint": "^5.7.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jest": "^21.25.1",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2"
+  },
+  "dependencies": {
+    "http-server": "^0.11.1"
+  },
+  "author": "Levent DEMIR",
+  "license": "ISC"
+}

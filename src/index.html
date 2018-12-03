@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Masq security analysis</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+
+    <!-- Custom styles for this template -->
+    <link href="masq.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+      <a class="navbar-brand" href="#">Masq</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link"  href="./index.html">webCryptoAPI <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./app/index.html">Security with Masq</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <main role="main">
+
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <div class="container">
+          <h1 class="display-4">WebCryptoAPI: understand the key management</h1>
+          <p>This page aim is to show how encryption keys could be managed using the webCrypto API.
+        </div>
+      </div>
+
+      <div class="container">
+        <!-- Example row of columns -->
+        <div class="row">
+          <div class="col-md-6">
+            <h3>Generate a AES 128 bits key</h3>
+            <p>We need an encryption key, let's generate an AES 128 bits key.</p>
+            <p><a class="btn btn-primary btn-md" id="generateAESKeyTrue" href="#generateAESKey" role="button">Generate with extractable true</a></p>
+            <p><a class="btn btn-primary btn-md" id="generateAESKeyFalse" href="#generateAESKey" role="button">Generate with extractable false</a></p>
+          
+          </div>
+          <div class="col-md-6">
+                <div id=step1KeyGeneration></div>
+            </div>
+        </div> 
+        <div class="row">
+                <div class="col-md-6">
+                  <h3>Export the key</h3>
+                  <p>We can export the generated key if the extractable property is set to true.  </p>
+                  <p><a class="btn btn-primary btn-md" id="exportAESKey" href="#" role="button">Export key</a></p>
+                </div>
+                <div class="col-md-6">
+                      <div id=step2KeyExport></div>
+                  </div>
+              </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Encrypt decrypt data</h3>
+                <p>The generated AES key is stored in a CryptoKey, this is like a black box with input and output. </p>
+                <p><a class="btn btn-primary btn-md" id="encryptDecrypt" href="#" role="button">Encrypt/decrypt</a></p>
+            </div>
+            <div class="col-md-6">
+                <div id=step3Encrypt></div>
+                <div id=step3Decrypt></div>
+                </div>
+            </div>
+        <div class="row">
+            <div class="col-md-6">
+                    <h3>Wrap the AES key</h3>
+                    <p>We derive a key based on the given passphrase, encrypt the AES key and export it.</p>
+                    <p><a class="btn btn-info btn-md" id="deriveKey" href="#" role="button">Wrap</a></p>
+            </div>
+            <div class="col-md-6">
+              <div id=step4Derive></div>
+              <div id=step4WrapSuccess></div>
+              <div id=step4WrapFail></div>
+              </div>
+          </div>
+    
+    </div>
+
+        <hr>
+
+      </div> <!-- /container -->
+
+    </main>
+
+    <footer class="container">
+      <p>&copy; Qwant</p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="../dist/crypto.bundle.js"></script>
+  </body>
+</html>
