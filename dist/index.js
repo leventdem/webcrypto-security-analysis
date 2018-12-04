@@ -15,10 +15,6 @@ var Crypto = require('./crypto');
 var AESInstance = null;
 var cryptoKeyAES = null;
 
-var profile = {
-  username: 'bob',
-  image: 'image1'
-};
 var debug = function debug(str) {
   if (process.env.NODE_ENV !== 'production') console.log(str);
 };
@@ -130,7 +126,7 @@ var deriveKey = function deriveKey() {
   // const mode = 'aes-cbc'
   var mode = 'aes-gcm';
   var type = 'raw';
-  return AESInstance.deriveKey(passPhrase, Buffer.from('theSalt'), iterations, mode).then(function (wrappingKey) {
+  return AESInstance.deriveKey(passPhrase, mode, Buffer.from('theSalt'), iterations).then(function (wrappingKey) {
     console.log('Salt : ', Buffer.from('theSalt'));
     console.log('Iterations : ', iterations);
     console.log('Wrapping key : ', wrappingKey);

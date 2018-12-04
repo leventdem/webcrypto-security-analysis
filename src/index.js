@@ -3,10 +3,6 @@ const Crypto = require('./crypto')
 let AESInstance = null
 let cryptoKeyAES = null
 
-let profile = {
-  username: 'bob',
-  image: 'image1'
-}
 const debug = (str) => {
   if (process.env.NODE_ENV !== 'production') console.log(str)
 }
@@ -52,10 +48,9 @@ const generateAESKey = async (extractable) => {
   AESInstance = new Crypto({ mode: 'aes-gcm' })
   AESInstance.genAESKey(extractable)
     .then(AESCryptoKey => {
-    // We print the key
       cryptoKeyAES = AESCryptoKey
+      // We print the key
       console.log(AESCryptoKey)
-
       let el = document.getElementById('step1KeyGeneration')
       el.innerHTML = fillElement(`Now, key successfully generated, open the developer console, and check the cryptokey. Yous must obtain something like this : 
   \n CryptoKey { type: "secret", extractable: ${extractable}, algorithm: {…}, usages:  }`)
@@ -111,7 +106,7 @@ const deriveKey = () => {
   // const mode = 'aes-cbc'
   const mode = 'aes-gcm'
   const type = 'raw'
-  return AESInstance.deriveKey(passPhrase, Buffer.from('theSalt'), iterations, mode)
+  return AESInstance.deriveKey(passPhrase, mode, Buffer.from('theSalt'), iterations)
     .then(wrappingKey => {
       console.log('Salt : ', Buffer.from('theSalt'))
       console.log('Iterations : ', iterations)

@@ -43,7 +43,7 @@ class Crypto extends EventEmitter {
    */
   constructor (params = {}) {
     super()
-    this.mode = params.mode || 'aes-cbc'
+    this.mode = params.mode || 'aes-gcm'
     this.keySize = params.keySize || 128
     this.IV = params.iv || null
     this.key = params.key || null
@@ -56,12 +56,14 @@ class Crypto extends EventEmitter {
    * Generate an AES key based on the cipher mode and keysize
    * Cipher mode and key size are initialized at cipher AES instance creation.
    * @param {boolean} extractable - Specify if the generated key is extractable
+   * @param {string} [mode] - The aes mode of the generated key
+   * @param {Number} [keySize] - Specify if the generated key is extractable
    * @returns {CryptoKey} - The generated AES key.
    */
-  genAESKey (extractable) {
+  genAESKey (extractable, mode, keySize) {
     return window.crypto.subtle.generateKey({
-      name: this.mode || 'aes-cbc',
-      length: this.keySize || 128
+      name: mode || 'aes-gcm',
+      length: keySize || 128
     }, extractable, ['decrypt', 'encrypt'])
   }
 
@@ -112,10 +114,12 @@ class Crypto extends EventEmitter {
  * Generate a PBKDF2 derived key based on user given passPhrase
  *
  * @param {string | arrayBuffer} passPhrase The passphrase that is used to derive the key
+ * @param {string} mode The mode of the derived key
  * @param {arrayBuffer} [salt] The passphrase length
+ * @param {Number} [iteration] The iteration number
  * @returns {Promise}   A promise that contains the derived key
  */
-  deriveKey (passPhrase, salt, iterations = 10000, mode) {
+  deriveKey (passPhrase, mode, salt, iterations) {
   // Always specify a strong salt
     if (iterations < 10000) { console.warn('The iteration number is less than 10000, increase it !') }
 
@@ -130,7 +134,7 @@ class Crypto extends EventEmitter {
         return window.crypto.subtle.deriveKey({
           name: 'PBKDF2',
           salt: salt || new Uint8Array([]),
-          iterations: iterations,
+          iterations: iterations || 100000,
           hash: 'sha-256'
         },
         baseKey,
@@ -156,7 +160,6 @@ class Crypto extends EventEmitter {
   * @returns {Uint8Array} - The wrapped key
   */
   wrapKey (toBeWrappedKey, wrappingKey, keySize, exportType, mode) {
-    console.log('crypto1')
     let iv = window.crypto.getRandomValues(new Uint8Array(mode === 'aes-gcm' ? 12 : 16))
     console.log([toBeWrappedKey, wrappingKey, iv])
     return window.crypto.subtle.wrapKey(exportType || 'raw',
@@ -166,14 +169,8 @@ class Crypto extends EventEmitter {
         name: mode || 'aes-gcm',
         iv: iv,
         additionalData: Buffer.from('')
-        // additionalData: toArray('')
       })
       .then(wrappedKey => {
-        console.log('crypto2')
-
-        console.log(new Uint8Array(wrappedKey))
-        console.log(new Uint8Array(wrappedKey).toString())
-
         return {
           encryptedMasterKey: (!exportType || exportType === 'raw') ? new Uint8Array(wrappedKey) : wrappedKey,
           iv: iv,
@@ -210,24 +207,6 @@ class Crypto extends EventEmitter {
       false,
       ['encrypt', 'decrypt'])
   }
-}
-
-/**
- * Convert ascii to ArrayBufffer
- * ex : "bonjour" -> Uint8Array [ 98, 111, 110, 106, 111, 117, 114 ]
- *
- * @param {String} str
- * @returns {ArrayBuffer}
- */
-const toArray = (str) => {
-  if (typeof str !== 'string') {
-    throw new Error('toArray accepts only string')
-  }
-  let chars = []
-  for (let i = 0; i < str.length; ++i) {
-    chars.push(str.charCodeAt(i))
-  }
-  return new Uint8Array(chars)
 }
 
 module.exports = Crypto
