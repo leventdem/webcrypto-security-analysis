@@ -130,17 +130,18 @@ var Crypto = function (_EventEmitter) {
     * Transform a CryptoKey into a raw key
     *
     * @param {CryptoKey} key - The CryptoKey
-    * @returns {arrayBuffer} - The raw key
+    * @returns {arrayBuffer|Object} - The raw key or the key as a jwk format
     */
 
   }, {
-    key: 'exportKeyRaw',
-    value: function exportKeyRaw() {
+    key: 'exportKey',
+    value: function exportKey() {
       var key = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._key;
       var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'raw';
 
       return window.crypto.subtle.exportKey(type, key).then(function (key) {
-        return new Uint8Array(key);
+        if (type === 'raw') return new Uint8Array(key);
+        return key;
       });
     }
   }, {

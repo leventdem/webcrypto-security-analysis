@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
   el = document.getElementById('encryptDecrypt');
   if (el) {
     el.addEventListener('click', function (e) {
-      encryptDecrypt();
+      encryptDecrypt(cryptoKeyAES);
     });
   }
   el = document.getElementById('deriveKey');
@@ -56,25 +56,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
 var generateAESKey = function () {
   var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(extractable) {
+    var mode, keySize;
     return _regenerator2.default.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             debug('generateAESKey');
+            mode = 'aes-gcm';
+            keySize = 128;
 
-            AESInstance = new Crypto({ mode: 'aes-gcm' });
-            AESInstance.genAESKey(extractable).then(function (AESCryptoKey) {
-              // We print the key
+            AESInstance = new Crypto();
+            AESInstance.genAESKey(extractable, mode, keySize).then(function (AESCryptoKey) {
               cryptoKeyAES = AESCryptoKey;
+              // We print the key
               console.log(AESCryptoKey);
-
               var el = document.getElementById('step1KeyGeneration');
               el.innerHTML = fillElement('Now, key successfully generated, open the developer console, and check the cryptokey. Yous must obtain something like this : \n  \n CryptoKey { type: "secret", extractable: ' + extractable + ', algorithm: {\u2026}, usages:  }');
             }).catch(function (err) {
               console.log(err);
             });
 
-          case 3:
+          case 5:
           case 'end':
             return _context.stop();
         }
@@ -90,7 +92,8 @@ var generateAESKey = function () {
 var exportAESKey = function exportAESKey() {
   var messageToPrint = null;
   var el = document.getElementById('step2KeyExport');
-  AESInstance.exportKeyRaw(cryptoKeyAES).then(function (exportedKey) {
+  // choose either 'raw' or 'jwk' format
+  AESInstance.exportKey(cryptoKeyAES, 'jwk').then(function (exportedKey) {
     console.log(exportedKey);
     messageToPrint = 'Successfully exported. Now try again, relaod the page but choose to  generate the AES key with the extractable property set to false.';
     el.innerHTML = fillElement('' + messageToPrint);
@@ -101,14 +104,14 @@ var exportAESKey = function exportAESKey() {
   });
 };
 
-var encryptDecrypt = function encryptDecrypt() {
+var encryptDecrypt = function encryptDecrypt(encryptionKey) {
   var data = { username: 'bob' };
   console.log('Initial message: ' + JSON.stringify(data));
-  AESInstance.encrypt(cryptoKeyAES, data).then(function (ciphertext) {
+  AESInstance.encrypt(encryptionKey, data).then(function (ciphertext) {
     // console.log(ciphertext.ciphertext)
     var el = document.getElementById('step3Encrypt');
     el.innerHTML = fillElement('\n  No matter if the generated AES key is extractable or not, you can encrypt/dectypt data using a black box. <br/>\n  Initial message : ' + JSON.stringify(data) + '<br/>\n  Encrypted msg : ' + ciphertext.ciphertext.slice(0, 10) + '...');
-    return AESInstance.decrypt(cryptoKeyAES, ciphertext);
+    return AESInstance.decrypt(encryptionKey, ciphertext);
   }).then(function (plaintext) {
     console.log('Decrypted message', plaintext);
     var el = document.getElementById('step3Decrypt');
@@ -123,9 +126,9 @@ var deriveKey = function deriveKey() {
   var el = document.getElementById('step4Derive');
   var passPhrase = 'hello';
   var iterations = 100000;
-  // const mode = 'aes-cbc'
   var mode = 'aes-gcm';
-  var type = 'raw';
+  var type = 'jwk';
+  // const type = 'raw'
   return AESInstance.deriveKey(passPhrase, mode, Buffer.from('theSalt'), iterations).then(function (wrappingKey) {
     console.log('Salt : ', Buffer.from('theSalt'));
     console.log('Iterations : ', iterations);
@@ -137,6 +140,7 @@ var deriveKey = function deriveKey() {
       el.innerHTML = '<p>\n          Wrapping of AES key : ok</p>';
       AESInstance.unwrapKey(wrappedKey.encryptedMasterKey, wrappingKey, wrappedKey.iv, 128, type, mode).then(function (unwrappedKey) {
         console.log('Unwrapped key', unwrappedKey);
+        // encryptDecrypt(unwrappedKey)
       }).catch(function (err) {
         return console.log(err);
       });

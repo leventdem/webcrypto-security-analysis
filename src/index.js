@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
   el = document.getElementById('encryptDecrypt')
   if (el) {
     el.addEventListener('click', function (e) {
-      encryptDecrypt()
+      encryptDecrypt(cryptoKeyAES)
     })
   }
   el = document.getElementById('deriveKey')
@@ -44,9 +44,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 const generateAESKey = async (extractable) => {
   debug('generateAESKey')
-
-  AESInstance = new Crypto({ mode: 'aes-gcm' })
-  AESInstance.genAESKey(extractable)
+  const mode = 'aes-gcm'
+  const keySize = 128
+  AESInstance = new Crypto()
+  AESInstance.genAESKey(extractable, mode, keySize)
     .then(AESCryptoKey => {
       cryptoKeyAES = AESCryptoKey
       // We print the key
@@ -63,7 +64,8 @@ const generateAESKey = async (extractable) => {
 const exportAESKey = () => {
   let messageToPrint = null
   let el = document.getElementById('step2KeyExport')
-  AESInstance.exportKeyRaw(cryptoKeyAES)
+  // choose either 'raw' or 'jwk' format
+  AESInstance.exportKey(cryptoKeyAES,'jwk')
     .then(exportedKey => {
       console.log(exportedKey)
       messageToPrint = 'Successfully exported. Now try again, relaod the page but choose to  generate the AES key with the extractable property set to false.'
@@ -76,10 +78,10 @@ const exportAESKey = () => {
     })
 }
 
-const encryptDecrypt = () => {
+const encryptDecrypt = (encryptionKey) => {
   let data = { username: 'bob' }
   console.log(`Initial message: ${JSON.stringify(data)}`)
-  AESInstance.encrypt(cryptoKeyAES, data)
+  AESInstance.encrypt(encryptionKey, data)
     .then(ciphertext => {
     // console.log(ciphertext.ciphertext)
       let el = document.getElementById('step3Encrypt')
@@ -87,7 +89,7 @@ const encryptDecrypt = () => {
   No matter if the generated AES key is extractable or not, you can encrypt/dectypt data using a black box. <br/>
   Initial message : ${JSON.stringify(data)}<br/>
   Encrypted msg : ${ciphertext.ciphertext.slice(0, 10)}...`)
-      return AESInstance.decrypt(cryptoKeyAES, ciphertext)
+      return AESInstance.decrypt(encryptionKey, ciphertext)
     })
     .then(plaintext => {
       console.log('Decrypted message', plaintext)
@@ -103,9 +105,9 @@ const deriveKey = () => {
   let el = document.getElementById('step4Derive')
   const passPhrase = 'hello'
   const iterations = 100000
-  // const mode = 'aes-cbc'
   const mode = 'aes-gcm'
-  const type = 'raw'
+  const type = 'jwk'
+  // const type = 'raw'
   return AESInstance.deriveKey(passPhrase, mode, Buffer.from('theSalt'), iterations)
     .then(wrappingKey => {
       console.log('Salt : ', Buffer.from('theSalt'))
@@ -121,6 +123,7 @@ const deriveKey = () => {
           AESInstance.unwrapKey(wrappedKey.encryptedMasterKey, wrappingKey, wrappedKey.iv, 128, type, mode)
             .then(unwrappedKey => {
               console.log('Unwrapped key', unwrappedKey)
+              // encryptDecrypt(unwrappedKey)
             }).catch(err => console.log(err))
         }).catch(err => {
           console.log(err)

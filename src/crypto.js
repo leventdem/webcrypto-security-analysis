@@ -71,11 +71,14 @@ class Crypto extends EventEmitter {
   * Transform a CryptoKey into a raw key
   *
   * @param {CryptoKey} key - The CryptoKey
-  * @returns {arrayBuffer} - The raw key
+  * @returns {arrayBuffer|Object} - The raw key or the key as a jwk format
   */
-  exportKeyRaw (key = this._key, type = 'raw') {
+  exportKey (key = this._key, type = 'raw') {
     return window.crypto.subtle.exportKey(type, key)
-      .then(key => new Uint8Array(key))
+      .then(key => {
+        if (type === 'raw') return new Uint8Array(key)
+        return key
+      })
   }
 
   encrypt (key, data) {
