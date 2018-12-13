@@ -31,6 +31,111 @@ var EventEmitter = require('events');
 var debug = console.log;
 
 /**
+ @typedef HashedPassphrase
+ @type {Object}
+ @property {string} storedHash - The hash of the derived key (format: hex string)
+ @property {string} hashAlgo - The hash algo for the PBKDF2 and the final hash to store it
+ @property {sring} salt - The salt used to derive the key (format: hex string)
+ @property {Number} iterations - The iteration # used during key derivation
+ */
+
+/**
+ * Generate a PBKDF2 derived key based on user given passPhrase
+ *
+ * @param {string | arrayBuffer} passPhrase The passphrase that is used to derive the key
+ * @param {arrayBuffer} [salt] The salt
+ * @param {Number} [iterations] The iterations number
+ * @param {string} [hash] The hash function used for derivation
+ * @returns {Promise<Uint8Array>}   A promise that contains the derived key
+ */
+var deriveBits = function deriveBits(passPhrase, salt, iterations, hash) {
+  // Always specify a strong salt
+  if (iterations < 10000) {
+    console.warn('The iteration number is less than 10000, increase it !');
+  }
+
+  return window.crypto.subtle.importKey('raw', typeof passPhrase === 'string' ? Buffer.from(passPhrase) : passPhrase, 'PBKDF2', false, ['deriveBits', 'deriveKey']).then(function (baseKey) {
+    return window.crypto.subtle.deriveBits({
+      name: 'PBKDF2',
+      salt: salt || new Uint8Array([]),
+      iterations: iterations || 100000,
+      hash: hash || 'sha-256'
+    }, baseKey, 128);
+  }).then(function (derivedKey) {
+    return new Uint8Array(derivedKey);
+  });
+};
+
+/**
+ * Hash of a string or arrayBuffer
+ *
+ * @param {string | arrayBuffer} msg The message
+ * @param {string} [type] The hash name (SHA-256 by default)
+ * @returns {Promise}   A promise that contains the hash as a Uint8Array
+ */
+var hash256 = function hash256(msg) {
+  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'SHA-256';
+
+  return window.crypto.subtle.digest({
+    name: 'SHA-256'
+  }, typeof msg === 'string' ? Buffer.from(msg) : msg).then(function (digest) {
+    return new Uint8Array(digest);
+  });
+};
+
+/**
+ * Derive a passphrase and return the object to store
+ *
+ * @param {string | arrayBuffer} passPhrase The passphrase that is used to derive the key
+ * @returns {Promise<HashedPassphrase>}   A promise that contains the derived key
+ */
+var derivePassphrase = function derivePassphrase(passPhrase) {
+  var hashedPassphrase = {};
+  var salt = window.crypto.getRandomValues(new Uint8Array(16));
+  var iterations = 100000;
+  hashedPassphrase.salt = Buffer.from(salt).toString('hex');
+  hashedPassphrase.iterations = iterations;
+  hashedPassphrase.hashAlgo = 'sha-256';
+  return deriveBitsAndHash(passPhrase, salt, iterations).then(function (hashedValue) {
+    hashedPassphrase.storedHash = Buffer.from(hashedValue).toString('hex');
+    return hashedPassphrase;
+  }).catch(function (err) {
+    return console.log(err);
+  });
+};
+
+/**
+ * Derive the passphrase with PBKDF2 and hash the output with the given hash function
+ *
+ * @param {string | arrayBuffer} passPhrase The passphrase that is used to derive the key
+ * @param {arrayBuffer} [salt] The salt
+ * @param {Number} [iterations] The iterations number
+ * @param {string} [hash] The hash function used for derivation and final hash computing
+ * @returns {Promise<Uint8Array>}   A promise that contains the hashed derived key
+ */
+var deriveBitsAndHash = function deriveBitsAndHash(passPhrase, salt, iterations, hash) {
+  return deriveBits(passPhrase, salt, iterations, hash).then(hash256);
+};
+
+/**
+ * Check a given passphrase by comparing it to the stored HashedPassphrase object
+ *
+ * @param {string} passphrase The passphrase
+ * @param {HashedPassphrase} hashedPassphrase The HashedPassphrase object
+ * @returns {Promise<HashedPassphrase>}   A promise that contains the derived key
+ */
+var checkPassphrase = function checkPassphrase(passPhrase, hashedPassphrase) {
+  var salt = hashedPassphrase.salt,
+      iterations = hashedPassphrase.iterations,
+      storedHash = hashedPassphrase.storedHash,
+      hashAlgo = hashedPassphrase.hashAlgo;
+
+  return deriveBitsAndHash(passPhrase, Buffer.from(salt, 'hex'), iterations, hashAlgo).then(function (hashedValue) {
+    return Buffer.from(hashedValue).toString('hex') === storedHash;
+  });
+};
+
+/**
  * Decrypt data
  *
  * @param {ArrayBuffer} data - Data to decrypt
@@ -269,4 +374,4 @@ var Crypto = function (_EventEmitter) {
   return Crypto;
 }(EventEmitter);
 
-module.exports = Crypto;
+module.exports = { Crypto: Crypto, derivePassphrase: derivePassphrase, checkPassphrase: checkPassphrase };

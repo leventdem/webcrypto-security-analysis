@@ -3,6 +3,19 @@ const Crypto = require('./crypto')
 let AESInstance = null
 let cryptoKeyAES = null
 
+// Crypto.derivePassphrase('hello', salt).then(Crypto.hash).then(res => console.log(Buffer.from(res).toString('hex')))
+console.log(Crypto)
+
+Crypto.derivePassphrase('hello')
+  .then(hashedPassphrase => {
+    console.log(hashedPassphrase)
+    return Crypto.checkPassphrase('helloo', hashedPassphrase)
+  })
+  .then(res => console.log('equal ?', res)
+  )
+  .catch(err => console.log(err)
+  )
+
 const debug = (str) => {
   if (process.env.NODE_ENV !== 'production') console.log(str)
 }
@@ -46,7 +59,7 @@ const generateAESKey = async (extractable) => {
   debug('generateAESKey')
   const mode = 'aes-gcm'
   const keySize = 128
-  AESInstance = new Crypto()
+  AESInstance = new Crypto.Crypto()
   AESInstance.genAESKey(extractable, mode, keySize)
     .then(AESCryptoKey => {
       cryptoKeyAES = AESCryptoKey
@@ -65,7 +78,7 @@ const exportAESKey = () => {
   let messageToPrint = null
   let el = document.getElementById('step2KeyExport')
   // choose either 'raw' or 'jwk' format
-  AESInstance.exportKey(cryptoKeyAES,'jwk')
+  AESInstance.exportKey(cryptoKeyAES, 'jwk')
     .then(exportedKey => {
       console.log(exportedKey)
       messageToPrint = 'Successfully exported. Now try again, relaod the page but choose to  generate the AES key with the extractable property set to false.'

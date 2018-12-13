@@ -15,6 +15,18 @@ var Crypto = require('./crypto');
 var AESInstance = null;
 var cryptoKeyAES = null;
 
+// Crypto.derivePassphrase('hello', salt).then(Crypto.hash).then(res => console.log(Buffer.from(res).toString('hex')))
+console.log(Crypto);
+
+Crypto.derivePassphrase('hello').then(function (hashedPassphrase) {
+  console.log(hashedPassphrase);
+  return Crypto.checkPassphrase('helloo', hashedPassphrase);
+}).then(function (res) {
+  return console.log('equal ?', res);
+}).catch(function (err) {
+  return console.log(err);
+});
+
 var debug = function debug(str) {
   if (process.env.NODE_ENV !== 'production') console.log(str);
 };
@@ -65,7 +77,7 @@ var generateAESKey = function () {
             mode = 'aes-gcm';
             keySize = 128;
 
-            AESInstance = new Crypto();
+            AESInstance = new Crypto.Crypto();
             AESInstance.genAESKey(extractable, mode, keySize).then(function (AESCryptoKey) {
               cryptoKeyAES = AESCryptoKey;
               // We print the key

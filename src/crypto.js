@@ -3,6 +3,114 @@ const EventEmitter = require('events')
 const debug = console.log
 
 /**
+ @typedef HashedPassphrase
+ @type {Object}
+ @property {string} storedHash - The hash of the derived key (format: hex string)
+ @property {string} hashAlgo - The hash algo for the PBKDF2 and the final hash to store it
+ @property {sring} salt - The salt used to derive the key (format: hex string)
+ @property {Number} iterations - The iteration # used during key derivation
+ */
+
+/**
+ * Generate a PBKDF2 derived key based on user given passPhrase
+ *
+ * @param {string | arrayBuffer} passPhrase The passphrase that is used to derive the key
+ * @param {arrayBuffer} [salt] The salt
+ * @param {Number} [iterations] The iterations number
+ * @param {string} [hash] The hash function used for derivation
+ * @returns {Promise<Uint8Array>}   A promise that contains the derived key
+ */
+const deriveBits = (passPhrase, salt, iterations, hash) => {
+  // Always specify a strong salt
+  if (iterations < 10000) { console.warn('The iteration number is less than 10000, increase it !') }
+
+  return window.crypto.subtle.importKey(
+    'raw',
+    (typeof passPhrase === 'string') ? Buffer.from(passPhrase) : passPhrase,
+    'PBKDF2',
+    false,
+    ['deriveBits', 'deriveKey']
+  )
+    .then(baseKey => {
+      return window.crypto.subtle.deriveBits({
+        name: 'PBKDF2',
+        salt: salt || new Uint8Array([]),
+        iterations: iterations || 100000,
+        hash: hash || 'sha-256'
+      }, baseKey, 128)
+    })
+    .then(derivedKey => new Uint8Array(derivedKey))
+}
+
+/**
+ * Hash of a string or arrayBuffer
+ *
+ * @param {string | arrayBuffer} msg The message
+ * @param {string} [type] The hash name (SHA-256 by default)
+ * @returns {Promise}   A promise that contains the hash as a Uint8Array
+ */
+const hash256 = (msg, type = 'SHA-256') => {
+  return window.crypto.subtle.digest(
+    {
+      name: 'SHA-256'
+    },
+    (typeof msg === 'string') ? Buffer.from(msg) : msg
+  )
+    .then(digest => new Uint8Array(digest))
+}
+
+/**
+ * Derive a passphrase and return the object to store
+ *
+ * @param {string | arrayBuffer} passPhrase The passphrase that is used to derive the key
+ * @returns {Promise<HashedPassphrase>}   A promise that contains the derived key
+ */
+const derivePassphrase = (passPhrase) => {
+  let hashedPassphrase = {}
+  const salt = window.crypto.getRandomValues(new Uint8Array(16))
+  const iterations = 100000
+  hashedPassphrase.salt = Buffer.from(salt).toString('hex')
+  hashedPassphrase.iterations = iterations
+  hashedPassphrase.hashAlgo = 'sha-256'
+  return deriveBitsAndHash(passPhrase, salt, iterations)
+    .then(hashedValue => {
+      hashedPassphrase.storedHash = Buffer.from(hashedValue).toString('hex')
+      return hashedPassphrase
+    })
+    .catch(err => console.log(err)
+    )
+}
+
+/**
+ * Derive the passphrase with PBKDF2 and hash the output with the given hash function
+ *
+ * @param {string | arrayBuffer} passPhrase The passphrase that is used to derive the key
+ * @param {arrayBuffer} [salt] The salt
+ * @param {Number} [iterations] The iterations number
+ * @param {string} [hash] The hash function used for derivation and final hash computing
+ * @returns {Promise<Uint8Array>}   A promise that contains the hashed derived key
+ */
+const deriveBitsAndHash = (passPhrase, salt, iterations, hash) => {
+  return deriveBits(passPhrase, salt, iterations, hash)
+    .then(hash256)
+}
+
+/**
+ * Check a given passphrase by comparing it to the stored hash value (in HashedPassphrase object)
+ *
+ * @param {string} passphrase The passphrase
+ * @param {HashedPassphrase} hashedPassphrase The HashedPassphrase object
+ * @returns {Promise<HashedPassphrase>}   A promise that contains the derived key
+ */
+const checkPassphrase = (passPhrase, hashedPassphrase) => {
+  const { salt, iterations, storedHash, hashAlgo } = hashedPassphrase
+  return deriveBitsAndHash(passPhrase, Buffer.from(salt, 'hex'), iterations, hashAlgo)
+    .then(hashedValue => {
+      return Buffer.from(hashedValue).toString('hex') === storedHash
+    })
+}
+
+/**
  * Decrypt data
  *
  * @param {ArrayBuffer} data - Data to decrypt
@@ -212,4 +320,4 @@ class Crypto extends EventEmitter {
   }
 }
 
-module.exports = Crypto
+module.exports = { Crypto, derivePassphrase, checkPassphrase }
